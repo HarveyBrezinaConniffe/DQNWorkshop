@@ -52,9 +52,6 @@ class DQN(nn.Module):
 	def __init__(self):
 		super(DQN, self).__init__()
 		self.neuralNet = nn.Sequential(
-			nn.Linear(2, 256),
-			nn.LeakyReLU(),
-			nn.Linear(64, 3)
 			### YOUR CODE HERE ###
 		)
 

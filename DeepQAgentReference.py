@@ -34,3 +34,30 @@ Transition = namedtuple("Transition", ["state", "action", "reward", "nextState"]
 MEMORY_SIZE = 1000
 replayMemory = deque(maxlen=MEMORY_SIZE)
 
+# TASK 3
+# Now it's time to get to the brains of the agent( AI )! This is the Q Network!
+# It takes in the current state and outputs an estimate of how much future reward we will get for each action.
+# In a self driving car it might take in a picture from a camera and output the reward from turning left, right or straight.
+# In this environment we will take in the cart's velocity and position and predict rewards for accelerating left, right and not accelerating.
+# EXAMPLE - A neural network that takes in 10 numbers and outputs 2 numbers:
+# 	>> self.neuralNet = nn.Sequential(
+#		nn.Linear(10, 256),
+#		nn.LeakyReLU(),
+#		nn.Linear(64, 2)
+#	)
+# We've already set up the scaffolding so you only need to fill in the part that says "YOUR CODE HERE"
+#
+# YOUR CODE: Create a neural network with at least 3 layers that takes 2 inputs and gives 3 outputs.
+class DQN(nn.Module):
+	def __init__(self):
+		super(DQN, self).__init__()
+		self.neuralNet = nn.Sequential(
+			nn.Linear(2, 3),
+			nn.LeakyReLU(),
+			nn.Linear(3, 3),
+			nn.LeakyReLU(),
+			nn.Linear(3, 3),
+		)
+
+	def forward(self, x):
+		return self.neuralNet(x)
