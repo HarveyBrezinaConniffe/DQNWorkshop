@@ -1,3 +1,5 @@
+from collections import deque
+
 try:
 	import torch
 except Exception as e:
@@ -32,7 +34,21 @@ if DeepQAgent.Transition.__name__ != "Transition":
 
 if DeepQAgent.Transition._fields != ("state", "action", "reward", "nextState"):
 	print("Error in Task 1!")
-	print("Your 'Transition' namedtuple has the fields {}. Remember that we want it to store state, action, reward and nextState!")
+	print("Your 'Transition' namedtuple has the fields {}. Remember that we want it to store state, action, reward and nextState!".format(DeepQAgent.Transition._fields))
 	exit(0)
 
 print("Task 1 successful! Your Transition namedTuple is correctly defined!")
+
+
+# Check Task 2
+if type(DeepQAgent.replayMemory) != deque:
+	print("Error in Task 2!")
+	print("Replay memory is supposed to be a deque but is actually {}".format(type(DeepQAgent.replayMemory).__name__))
+	exit(0)
+
+if DeepQAgent.replayMemory.maxlen != DeepQAgent.MEMORY_SIZE:
+	print("Error in Task 2!")
+	print("Replay memory should only store the last {} transitions. Make sure you've set the maxlen property!".format(DeepQAgent.MEMORY_SIZE))
+	exit(0)
+
+print("Task 2 successful! replayMemory is correctly setup!")
