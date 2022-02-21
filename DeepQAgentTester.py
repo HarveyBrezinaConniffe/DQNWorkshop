@@ -52,3 +52,46 @@ if DeepQAgent.replayMemory.maxlen != DeepQAgent.MEMORY_SIZE:
 	exit(0)
 
 print("Task 2 successful! replayMemory is correctly setup!")
+
+# Check Task 3
+try:
+	dqn = DeepQAgent.DQN()
+except Exception as e:
+	print("Error in Task 3!")
+	print(e)
+	exit(0)
+
+children = dqn.named_children()
+hasNN = False
+for child in children:
+	if child[0] == "neuralNet":
+		hasNN = True
+		layers = list(child[1].children())
+		if len(layers) == 0:
+			print("Error in Task 3!")
+			print("Add some layers to the neuralNet!")
+			exit(0)
+		if type(layers[0]) != torch.nn.modules.linear.Linear:
+			print("Error in Task 3!")
+			print("The first layer of your neural network should be a Linear layer!")
+			exit(0)
+		if layers[0].in_features != 2:
+			print("Error in Task 3!")
+			print("Your neural network takes in {} inputs. Remember that we take in 2 inputs, Velocity and position!".format(layers[0].in_features))
+			exit(0)
+		if layers[-1].out_features != 3:
+			print("Error in Task 3!")
+			print("Your neural network has {} outputs. Remember that we have 3 possible actions, Accelerate left, Right or stay still!".format(layers[-1].out_features != 3))
+			exit(0)
+		noActivation = False
+		lastLayer = None
+		for layer in layers:
+			layerType = type(layer)
+
+			lastLayer = layerType
+		
+
+if hasNN == False:
+	print("Error in Task 3!")
+	print("I couldn't seem to find \"neuralNet\", Did you rename it?")
+	exit(0)
