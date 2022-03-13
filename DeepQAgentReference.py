@@ -61,3 +61,37 @@ class DQN(nn.Module):
 
 	def forward(self, x):
 		return self.neuralNet(x)
+
+# Let's initialize a new Q network!
+QNetwork = DQN()
+
+# TASK 4
+# Let's put the Q network to good use! We're going to make a function that takes in a state and decides which action to take.
+# Remember that each of the Q network's outputs represents how much future reward it thinks you'll get from that action.
+# The steps that this function will take are:
+# 	1. Feed the state into the Q network.
+#	2. Convert the Q networks output from a pytorch tensor into a numpy array.
+#	3. Choose the action with the highest predicted reward.
+#	4. Return that action.
+def chooseAction(state):
+	# Run the Q network on the input state.
+	# EXAMPLE -- Running a cat or dog classifier on an image would look like:
+	# 	>> result = catClassifier(image)
+	predictedRewards = QNetwork(state)
+	# Convert the output from a pytorch tensor to a numpy arra.
+	# EXAMPLE -- Converting the cat classifiers output would look like:
+	# 	>> resultNumpy = result.detach().numpy()
+	predictedRewardsNumpy = predictedRewards.detach().numpy()
+	# Choose the action with the highest predicted reward.
+	# You could do this with a loop but the np.argmax function provides a much more elegant way to do it.
+	# EXAMPLE:
+	#	>> array = [1, 5, 2]
+	#	>> np.argmax(array)
+	#	1
+	bestAction = -1
+	# ** These are weird lines of code neccessary for the tester program. Don't worry about them.
+	chooseAction.predictedRewards = predictedRewards
+	chooseAction.predictedRewardsNumpy = predictedRewardsNumpy
+	# ** End of debug lines.
+	# Return the best action.
+	return bestAction

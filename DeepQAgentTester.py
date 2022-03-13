@@ -7,6 +7,7 @@ except Exception as e:
 	print("Failed to import pytorch!")
 	print("Hint: Have you installed pytorch yet?")
 	print("If not see: https://pytorch.org/get-started/locally/")
+	exit(0)
 
 try:
 	import gym
@@ -15,14 +16,16 @@ except Exception as e:
 	print("Failed to import openAI gym!")
 	print("Hint: Have you installed gym yet?")
 	print("If not see: https://gym.openai.com/docs/")
+	exit(0)
 
 try:
-	env = gym.make('CartPole-v1')
+	env = gym.make('MountainCar-v0')
 except Exception as e:
 	print(e)
 	print("Failed to initialize an environment!")
 	print("Hint: You may need to install the classic control package")
 	print("Try running: pip install gym[classic_control]")
+	exit(0)
 
 import DeepQAgentReference as DeepQAgent
 
@@ -136,3 +139,23 @@ if hasNN == False:
 
 print("Task 3 successful! Your neural network is set up correctly!")
 print()
+
+# Check Task 4 -- Choose best action
+testState = torch.zeros((2))
+try:
+	bestAction = DeepQAgent.chooseAction(testState)
+	# Check that they are running the neural network correctly.
+	predictedRewards = DeepQAgent.chooseAction.predictedRewards
+	predictedRewardsNumpy = DeepQAgent.chooseAction.predictedRewardsNumpy
+	if predictedRewards == [-1, -1, -1]:
+		print("Error in Task 4!")
+		print("Predicted rewards is currently a static array! It should come from the Q network!")
+		exit(0)
+	if predictedRewardsNumpy == [-1, -1, -1]:
+		print("Error in Task 4!")
+		print("predictedRewardsNumpy is currently a static array! It should be the result of converting predictedRewards.")
+		exit(0)
+except Exception as e:
+	print("Error in Task 4!")
+	print(e)
+	exit(0)
