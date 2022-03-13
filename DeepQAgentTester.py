@@ -147,11 +147,11 @@ try:
 	# Check that they are running the neural network correctly.
 	predictedRewards = DeepQAgent.chooseAction.predictedRewards
 	predictedRewardsNumpy = DeepQAgent.chooseAction.predictedRewardsNumpy
-	if predictedRewards == [-1, -1, -1]:
+	if type(predictedRewards).__name__ == "list":
 		print("Error in Task 4!")
 		print("Predicted rewards is currently a static array! It should come from the Q network!")
 		exit(0)
-	if predictedRewardsNumpy == [-1, -1, -1]:
+	if type(predictedRewardsNumpy).__name__ == "list":
 		print("Error in Task 4!")
 		print("predictedRewardsNumpy is currently a static array! It should be the result of converting predictedRewards.")
 		exit(0)
