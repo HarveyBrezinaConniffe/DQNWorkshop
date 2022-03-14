@@ -1,4 +1,5 @@
 from collections import deque
+import numpy as np
 
 try:
 	import torch
@@ -147,6 +148,7 @@ try:
 	# Check that they are running the neural network correctly.
 	predictedRewards = DeepQAgent.chooseAction.predictedRewards
 	predictedRewardsNumpy = DeepQAgent.chooseAction.predictedRewardsNumpy
+	# Check that the predicted rewards are not just the default lists.
 	if type(predictedRewards).__name__ == "list":
 		print("Error in Task 4!")
 		print("Predicted rewards is currently a static array! It should come from the Q network!")
@@ -155,7 +157,57 @@ try:
 		print("Error in Task 4!")
 		print("predictedRewardsNumpy is currently a static array! It should be the result of converting predictedRewards.")
 		exit(0)
+	# Check that predicted rewards are the correct type
+	if type(predictedRewards).__name__ != "Tensor":
+		print("Error in Task 4!")
+		print("predictedRewards should be a tensor! Are you getting it from the neural network?")
+		exit(0)
+	if type(predictedRewardsNumpy).__name__ != "ndarray":
+		print("Error in Task 4!")
+		print("predictedRewardsNumpy should be a numpy array! Are you converting it from the Tensor?")
+		exit(0)
+	# Check that the values match as they should.
+	if not np.array_equal(predictedRewardsNumpy, predictedRewards.detach().numpy()):
+		print("Error in Task 4!")
+		print("predictedRewardsNumpy doesn't seem to match with predictedRewards, Are you converting it right?")
+		exit(0)
+	if np.argmax(predictedRewardsNumpy) != bestAction:
+		print("Error in Task 4!")
+		print("You aren't selecting the action with the highest value from predictedRewardsNumpy!")
+		exit(0)
+
 except Exception as e:
 	print("Error in Task 4!")
 	print(e)
 	exit(0)
+
+print("Task 4 successful! You can now use the Q function to choose an action!")
+print()
+
+# Test task 5 - Collecting transitions
+DeepQAgent.collectTransitions()
+# Test that there are entries in the replayMemory
+if len(DeepQAgent.replayMemory) == 0:
+	print("Error in Task 5!")
+	print("Your replay memory is empty! Is your collectTransitions function appending to replayMemory?")
+	exit(0)
+# Test that the Transitions have the right structure
+testTransition = DeepQAgent.replayMemory[0]
+
+if type(testTransition.state).__name__ != "Tensor":
+	print("Your transitions should contain values of the type Tensor in the state field, Your's contain values of the type {} instead!".format(type(testTransition.state).__name__))
+	exit(0)
+
+if type(testTransition.action).__name__ != "int64":
+	print("Your transitions should contain values of the type int64 in the action field, Your's contain values of the type {} instead!".format(type(testTransition.action).__name__))
+	exit(0)
+
+if type(testTransition.reward).__name__ != "float32":
+	print("Your transitions should contain values of the type float32 in the reward field, Your's contain values of the type {} instead!".format(type(testTransition.reward).__name__))
+	exit(0)
+
+if type(testTransition.nextState).__name__ != "Tensor":
+	print("Your transitions should contain values of the type Tensor in the nextState field, Your's contain values of the type {} instead!".format(type(testTransition.nextState).__name__))
+	exit(0)
+
+print("Task 5 successful! You can now collect transitions to use for training!")

@@ -87,3 +87,39 @@ def chooseAction(state):
 	bestAction = -1
 	# Return the best action.
 	return bestAction
+
+# Initialize the environment
+env = gym.make('MountainCar-v0')
+
+# TASK 5
+# Now that we have a way to play the game let's collect some transitions to learn from!
+# This function will play one game( Until we reach completion ) while recording the transitions.
+def collectTransitions():
+	# Record the first frame of the game.
+	observation = env.reset()
+	# Once the game is done we want to return.
+	done = False
+	while not done:
+		# Convert the current state to a numpy array.
+		currentState = torch.from_numpy(observation)
+		# Choose an action to take.
+
+		# YOUR CODE HERE, USE THE chooseAction FUNCTION YOU MADE IN TASK 4.
+		action = -1
+		# END OF YOUR CODE
+
+		# Tell the environment what action we are taking.
+		observation, _, done, info = env.step(action)
+		# By default this environment only returns a single reward at the end of the game if we win.
+		# This is called a "sparse" reward and is quite challenging for a neural network to learn from!
+		# I've implemented a much simpler reward since we have a very small neural network.
+		# It just gives us a higher reward the closer we are to the flag( Goal of the game ).
+		reward = np.exp(observation[0]*10, dtype=np.float32)
+
+		# Convert the new observation to a numpy arra
+		newState = torch.from_numpy(observation)
+
+		# Construct a Transition namedTuple containing the currentState, action, reward and newState
+		# YOUR CODE HERE - Fill in the transition with the correct variables and add it to the replayMemory
+		transition = Transition("X", "X", "X", "X")
+		# END OF YOUR CODE

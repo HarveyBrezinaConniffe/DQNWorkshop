@@ -81,17 +81,54 @@ def chooseAction(state):
 	# Convert the output from a pytorch tensor to a numpy arra.
 	# EXAMPLE -- Converting the cat classifiers output would look like:
 	# 	>> resultNumpy = result.detach().numpy()
-	predictedRewardsNumpy = predictedRewards.detach().numpy()
+	predictedRewardsNumpy = predictedRewards.detach().numpy() 
 	# Choose the action with the highest predicted reward.
 	# You could do this with a loop but the np.argmax function provides a much more elegant way to do it.
 	# EXAMPLE:
 	#	>> array = [1, 5, 2]
 	#	>> np.argmax(array)
 	#	1
-	bestAction = -1
+	bestAction = np.argmax(predictedRewardsNumpy)
 	# ** These are weird lines of code neccessary for the tester program. Don't worry about them.
 	chooseAction.predictedRewards = predictedRewards
 	chooseAction.predictedRewardsNumpy = predictedRewardsNumpy
 	# ** End of debug lines.
 	# Return the best action.
 	return bestAction
+
+# Initialize the environment.
+env = gym.make('MountainCar-v0')
+
+# TASK 5
+# Now that we have a way to play the game let's collect some transitions to learn from!
+# This function will play one game( Until we reach completion ) while recording the transitions.
+def collectTransitions():
+	# Record the first frame of the game.
+	observation = env.reset()
+	# Once the game is done we want to return.
+	done = False
+	while not done:
+		# Convert the current state to a numpy array.
+		currentState = torch.from_numpy(observation)
+		# Choose an action to take.
+
+		# YOUR CODE HERE, USE THE chooseAction FUNCTION YOU MADE IN TASK 4.
+		action = chooseAction(currentState)
+		# END OF YOUR CODE
+
+		# Tell the environment what action we are taking.
+		observation, _, done, info = env.step(action)
+		# By default this environment only returns a single reward at the end of the game if we win.
+		# This is called a "sparse" reward and is quite challenging for a neural network to learn from!
+		# I've implemented a much simpler reward since we have a very small neural network.
+		# It just gives us a higher reward the closer we are to the flag( Goal of the game ).
+		reward = np.exp(observation[0]*10, dtype=np.float32)
+
+		# Convert the new observation to a numpy arra
+		newState = torch.from_numpy(observation)
+
+		# Construct a Transition namedTuple containing the currentState, action, reward and newState
+		# YOUR CODE HERE - Fill in the transition with the correct variables and add it to the replayMemory
+		transition = Transition(currentState, action, reward, newState)
+		replayMemory.append(transition)
+		# END OF YOUR CODE
