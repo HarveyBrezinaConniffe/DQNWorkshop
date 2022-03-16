@@ -123,3 +123,83 @@ def collectTransitions():
 		# YOUR CODE HERE - Fill in the transition with the correct variables and add it to the replayMemory
 		transition = Transition("X", "X", "X", "X")
 		# END OF YOUR CODE
+
+# TASK 6
+# Now that we can collect transitions how about we try and learn something from them!
+# This function takes in a loss function and optimizer using them alongside a batch of transitions to update the models parameters!
+def trainStep(lossFunction, optimizer, batchSize):
+	# Take a random sample of batchSize transitions from the replay memory.
+	# EXAMPLE -- To select a random sample of 2 elements from an array we can run:
+	#	>> fruits = ["Apple", "Bannana", "Orange", "Grape"]
+	#	>> random.sample(fruits, 2)
+	#	["Grape", "Bannana"]
+	# YOUR CODE HERE - Take a random sample of batchSize elements from replayMemory
+	batch = "X"
+	# END OF YOUR CODE
+	
+	# These next few lines process the batch into the correct format for training.
+	# Currently batch is an array of tuples, So if you wanted to get all of the reward values you would have to
+	# get the 3rd element of the 1st tuple, the 3rd element of the 2nd tuple, the 3rd element of the 3rd tuple and so on.
+	# While storing them in this way is nice for working with them it's not the best for feedint them into pytorch.
+	# What we would like to do is make an array with all the rewards, an array with all the states...
+	# We could do this with loops but there is an easier way!
+	# The "zip" function in python takes in multiple arrays and reformats them into a different array for each element.
+	# EXAMPLE -- The zip function:
+	#	>> zip(["Apple", 157.90], ["Google", 2653.78], ["Microsoft", 291.45])
+	# 	["Apple", "Google", "Microsoft"], [157.9, 2653.78, 291.45]
+	# This is nearly what we need, If we ran zip(batch[0], batch[1], batch[2]) we would get 4 arrays
+	# state, action, reward, nextState each with 3 entries( From the first 3 elements of batch ).
+	# But how do we feed in the entire batch without having to write each one by hand?
+	# Luckily python has a way to do this. Inputting an array to a function with a '*' before it treats each entry of the
+	# array as a separate argument.
+	# So zip(*batch) is the same as running zip and inputting each element of batch individually!
+	states, actions, rewards, nextStates = zip(*batch)
+	# Next we just convert some of these lists into tensors
+	states = torch.stack(states)
+	rewards = torch.from_numpy(np.array(rewards))
+	nextStates = torch.stack(nextStates)
+	
+	# Ok, Let's do some training now! 
+	# The first thing we want to do is see what rewards the Q network predicts for every state in this batch.
+	# We did this before when collecting the transitions but remember we are going to learn from these more than once!
+	# So the Q network might have changed since last time!
+	# YOUR CODE HERE - Run the Q network on all states in this batch! If you're stuck have a look at collectTransitions
+	predictedRewards = "X"
+	# END OF YOUR CODE
+
+	# So we've gotten the Q network to make some predictions! But how do we train it now?
+	# In order to train a neural network we need to know what the "right" answer is.
+	# This lets us know how "wrong" the neural networks predictions are!
+	# But what even is the right answer in this case?
+	# Remember what the Q network is predicting, For each action it predicts the total future reward if you take that
+	# action and then play perfectly after that.
+	# Writing that more concisely: Q(action) = Reward from taking action + Highest reward possible from this point on
+	# We already have the first part of this equation! For each transition we took one action and recieved one reward.
+	# But how do we know what the second part of the equation should be?
+	# Well we know that after taking each action we ended up in "newState", We want to know what the highest reward
+	# we can get in newState is. But how do we know this?
+	# Turns out we already have a way to predict future rewards, The Q network!
+
+	# Let's start by picking predicting the total future reward for each action for each state in newStates
+	# YOUR CODE HERE - Run the Q network on all states in newStates
+	# Note: We want to use the Q network here to work out the correct values, We don't want to train it here though!
+	# So we use torch.no_grad()
+	with torch.no_grad():
+		futurePredictions = "X"
+	# END OF YOUR CODE
+
+	# futurePredictions is another 2d array, For each state in newState it contains a prediction for each possible action 
+	# But we only care about the highest reward possible from any action!
+	# EXAMPLE - Getting the maximum value in pytorch.
+	#	>> a = torch.Tensor([1, 0, 5],
+	#			    [9, 8, 2],
+	#			    [2, 10, 3])
+	#	>> torch.max(a, 1)
+	#	[5, 9, 10]
+	# YOUR CODE HERE -- Get the maximum predicted reward for each prediction in bestFutureRewards.
+	maxFutureRewards = "X"
+
+	# predictedRewards is a 2d tensor, For each state in batch the Q network has predicted 3 values( A reward for each action ).
+	# However each transition contains a reward for only 1 action.
+	# This means that we can work out a correct answer for only 1 value in each of Qnetwork's predictions.
+	# We need to filter out the value that we know the answer for
