@@ -158,6 +158,9 @@ def trainStep(lossFunction, optimizer, batchSize):
 	states = torch.stack(states)
 	rewards = torch.from_numpy(np.array(rewards))
 	nextStates = torch.stack(nextStates)
+	# Because of how a function you'll be using later on( torch.gather ) works we need to wrap each element in actions
+	# E.G. [1, 2, 3] -> [[1], [2], [3]]
+	actions = torch.unsqueeze(torch.Tensor(actions), 1).to(torch.int64)
 	
 	# Ok, Let's do some training now! 
 	# The first thing we want to do is see what rewards the Q network predicts for every state in this batch.
@@ -169,7 +172,6 @@ def trainStep(lossFunction, optimizer, batchSize):
 
 	# So we've gotten the Q network to make some predictions! But how do we train it now?
 	# In order to train a neural network we need to know what the "right" answer is.
-	# This lets us know how "wrong" the neural networks predictions are!
 	# But what even is the right answer in this case?
 	# Remember what the Q network is predicting, For each action it predicts the total future reward if you take that
 	# action and then play perfectly after that.
@@ -188,7 +190,7 @@ def trainStep(lossFunction, optimizer, batchSize):
 		futurePredictions = "X"
 	# END OF YOUR CODE
 
-	# futurePredictions is another 2d array, For each state in newState it contains a prediction for each possible action 
+	# futurePredictions is a 2d array, For each state in newState it contains a prediction for each possible action 
 	# But we only care about the highest reward possible from any action!
 	# EXAMPLE - Getting the maximum value in pytorch.
 	#	>> a = torch.Tensor([1, 0, 5],
@@ -196,10 +198,41 @@ def trainStep(lossFunction, optimizer, batchSize):
 	#			    [2, 10, 3])
 	#	>> torch.max(a, 1)
 	#	[5, 9, 10]
-	# YOUR CODE HERE -- Get the maximum predicted reward for each prediction in bestFutureRewards.
+	# YOUR CODE HERE -- Get the maximum predicted reward for each prediction in futurePredictions.
 	maxFutureRewards = "X"
+	# END OF YOUR CODE
 
-	# predictedRewards is a 2d tensor, For each state in batch the Q network has predicted 3 values( A reward for each action ).
-	# However each transition contains a reward for only 1 action.
-	# This means that we can work out a correct answer for only 1 value in each of Qnetwork's predictions.
-	# We need to filter out the value that we know the answer for
+	# We're nearly there! We've worked out the highest reward possible! All we need to do is add on the reward we got.
+	# YOUR CODE HERE -- Add rewards to maxFutureRewards
+	maxFutureRewards += "X"
+	# END OF YOUR CODE
+
+	# Now we have something to compare the Q networks predictions to! But there's one more thing we need to do first.
+	# Remember that maxFutureRewards was a 2d array but we reduced it down to 1d. We need to do the same to predictedRewards.
+	# For each transition in the batch we only took 1 action when collecting it. This action is the only one that we
+	# collected data about. So for each element of predictedRewards we only care about the prediction relating to that action.
+	# Luckily PyTorch has a function for this! Torch.gather
+	# EXAMPLE -- torch.gather
+	# 	>> t = torch.tensor([[1, 2], [3, 4]])
+	#	>> torch.gather(t, 1, torch.tensor([[0], [1]]))
+	#	tensor([[1],
+        #		[4]])
+	# YOUR CODE HERE -- Select the correct entries in predictedRewards using the values of actions
+	predictedRewards = "X"	
+	# END OF YOUR CODE
+
+	# predictedRewards looks like [[1], [4]], maxFutureRewards looks like [1, 4]. In order to make them the same we have
+	# to "squeeze" a dimension out of predictedRewards
+	predictedRewards = torch.squeeze(predictedRewards, 1)
+
+	# Great work! Now we have the predictions from the Q network along with the target values. Let's train it!
+	# First we have to clear the optimizer, This means that it will only learn from the data we are showing it right now.
+	optimizer.zero_grad()
+	# Next we need to find the loss( How wrong ) the neural network is.
+	loss = lossFunc(predictedRewards, maxFutureRewards)
+	# Now we use propagate this loss backwards to work out how to update the Q networks weights.
+	loss.backwards()
+	# Finally we give these gradients to the optimizer which will update the Q networks weights.
+	optimizer.step()
+	# Return the loss value for debugging and progress monitoring
+	return loss

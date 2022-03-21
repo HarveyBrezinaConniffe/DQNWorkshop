@@ -211,3 +211,11 @@ if type(testTransition.nextState).__name__ != "Tensor":
 	exit(0)
 
 print("Task 5 successful! You can now collect transitions to use for training!")
+
+mse = torch.nn.MSELoss()
+optimizer = torch.optim.RMSprop(dqn.parameters())
+batchSize = 16
+DeepQAgent.collectTransitions()
+DeepQAgent.trainStep(mse, optimizer, batchSize)
+
+print("Task 6 successful! You can now run a training step on your agent!")
