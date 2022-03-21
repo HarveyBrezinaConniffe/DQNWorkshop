@@ -245,3 +245,60 @@ def trainStep(lossFunction, optimizer, batchSize):
 	optimizer.step()
 	# Return the loss value for debugging and progress monitoring
 	return loss
+
+# That's it! You've written all the parts neccessary to train a Deep Q Agent. Let's put the parts together!
+
+# First we'll define a small helper function that just makes it easier to see how the agent is progressing.
+# Don't worry about it too much but there isn't anything new here. You should be able to understand it now!
+# Function that plays numGames and finds the average reward gained by the agent. It can also render the games!
+def evaluateAgent(numGames, renderGames=False):
+	# Record average reward
+	avgReward = 0.
+	for i in range(numGames):
+		totalReward = 0.
+		# Record the first frame of the game.
+		observation = env.reset()
+		# Once the game is done we want to return.
+		done = False
+		while not done:
+			# Convert the current state to a numpy array.
+			currentState = torch.from_numpy(observation)
+			# Choose an action
+			action = chooseAction(currentState)
+			# Tell the environment what action we are taking.
+			observation, _, done, info = env.step(action)
+			reward = np.exp(observation[0]*10, dtype=np.float32)
+			# Add reward to total
+			totalReward += reward
+			# If rendering game show the frame
+			if renderGames:
+				env.render()
+		avgReward += totalReward
+	avgReward /= numGames
+	return avgReward
+
+# Define some constants for training.
+
+BATCH_SIZE = 16
+# How often to evaluate the agent.
+EVALUATE_EVERY = 5
+# How often to render games for us to see( Fun but slow )
+RENDER_EVERY = 20
+
+# Initialize the loss function and optimizer
+lossFunc = torch.nn.MSELoss()
+optimizer = torch.optim.RMSprop(QNetwork.parameters())
+
+# This makes sure the tester won't run this
+if __name__ == "__main__":
+	i = 0
+	while True:
+		# Collect some transitions
+		collectTransitions()
+		# Run a train step
+		trainStep(lossFunc, optimizer, BATCH_SIZE)
+		# Evaluate agent
+		if i%EVALUATE_EVERY == 0:
+			avgReward = evaluateAgent(3, bool(i%RENDER_EVERY == 0))
+			print("Train Step {}: Average reward is {}".format(i, avgReward))
+		i += 1
