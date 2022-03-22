@@ -31,7 +31,7 @@ Transition = namedtuple("X", ["X"])
 #	['Trinity', 'DCU']
 #
 # YOUR CODE: Create a deque to hold MEMORY_SIZE transitions
-MEMORY_SIZE = 1000
+MEMORY_SIZE = 10000
 replayMemory = "TODO"
 
 # TASK 3
@@ -202,8 +202,9 @@ def trainStep(lossFunction, optimizer, batchSize):
 	maxFutureRewards = "X"
 	# END OF YOUR CODE
 
+	# We fisrt need to multiply maxFutureRewards by some value ( E.g. 0.99 ) since we care less about older rewards.
 	# We're nearly there! We've worked out the highest reward possible! All we need to do is add on the reward we got.
-	# YOUR CODE HERE -- Add rewards to maxFutureRewards
+	# YOUR CODE HERE -- Multiply maxFutureRewards by 0.99 and add rewards to maxFutureRewards
 	maxFutureRewards += "X"
 	# END OF YOUR CODE
 
@@ -232,6 +233,9 @@ def trainStep(lossFunction, optimizer, batchSize):
 	loss = lossFunc(predictedRewards, maxFutureRewards)
 	# Now we use propagate this loss backwards to work out how to update the Q networks weights.
 	loss.backwards()
+	# Here we "clamp" the gradient to prevent any one update being too big. This helps with stability.
+	for param in QNetwork.parameters():
+		param.grad.data.clamp_(-1, 1)
 	# Finally we give these gradients to the optimizer which will update the Q networks weights.
 	optimizer.step()
 	# Return the loss value for debugging and progress monitoring
@@ -270,14 +274,15 @@ def evaluateAgent(numGames, renderGames=False):
 
 # Define some constants for training.
 
-BATCH_SIZE = 16
+BATCH_SIZE = 32
+STEPS_PER_TRAINSTEP = 5
 # How often to evaluate the agent.
-EVALUATE_EVERY = 5
+EVALUATE_EVERY = 25
 # How often to render games for us to see( Fun but slow )
-RENDER_EVERY = 20
+RENDER_EVERY = 100
 
 # Initialize the loss function and optimizer
-lossFunc = torch.nn.MSELoss()
+lossFunc = torch.nn.SmoothL1Loss()
 optimizer = torch.optim.RMSprop(QNetwork.parameters())
 
 # This makes sure the tester won't run this
@@ -287,7 +292,8 @@ if __name__ == "__main__":
 		# Collect some transitions
 		collectTransitions()
 		# Run a train step
-		trainStep(lossFunc, optimizer, BATCH_SIZE)
+		for _ in range(STEPS_PER_TRAINSTEP):
+			trainStep(lossFunc, optimizer, BATCH_SIZE)
 		# Evaluate agent
 		if i%EVALUATE_EVERY == 0:
 			avgReward = evaluateAgent(3, bool(i%RENDER_EVERY == 0))
